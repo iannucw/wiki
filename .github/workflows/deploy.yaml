@@ -1,0 +1,40 @@
+name: Update production website
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+jobs:
+  update-wiki:
+    runs-on: ubuntu-latest
+    name: "Update wiki" 
+    steps:
+      - name: Clone public pages
+        uses: actions/checkout@v3
+        with:
+          clean: true
+          path: "pages"
+          token: ${{ secrets.CI }}
+
+      - name: Clone wiki repository
+        uses: actions/checkout@v3
+        with:
+          repository: "elitegamers-wiki/wiki-prod"
+          clean: true
+          path: "prod"
+          ref: "main"
+          token: ${{ secrets.CI }}
+
+      - name: Update production pages
+        run: |
+          git config --global user.email "github@elitegamers.ro"
+          git config --global user.name "elitegamers-wiki"
+
+          cp pages/*.md prod/docs/
+
+          cd prod
+
+          git status
+          git add .
+          git commit -m "docs: updated pages" || true
+          git push || true
